@@ -1,48 +1,39 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// This file is a serverless function deployed at `/api/generate-quiz`.
-// The hosting platform (like Vercel) is configured to run this file when that endpoint is requested.
-// You must set the `API_KEY` as a secret environment variable in your hosting platform.
-
-// The handler signature is compatible with platforms that support the standard Request/Response Web APIs (like Vercel Edge Functions).
-export default async (req: Request): Promise<Response> => {
-    // Add CORS headers to allow requests from your frontend
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*', // In production, restrict this to your domain
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-    };
-
+// This function is now a standard Node.js Serverless Function.
+// It has a longer execution timeout than an Edge Function, which is
+// better suited for potentially long-running AI API calls.
+export default async function handler(
+    req: VercelRequest,
+    res: VercelResponse,
+) {
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders, status: 204 });
+        res.setHeader('Access-Control-Allow-Origin', '*'); // Be more specific in production
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        return res.status(204).end();
     }
     
-    // Only allow POST requests
+    // Set CORS headers for the main request
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Be more specific in production
+
     if (req.method !== 'POST') {
-        return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
-            status: 405,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     try {
-        const { context } = await req.json();
+        const { context } = req.body;
 
         if (!context || typeof context !== 'string' || context.trim().length < 50) {
-            return new Response(JSON.stringify({ error: 'Invalid context provided. Must be a string with at least 50 characters.' }), {
-                status: 400,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
+            return res.status(400).json({ error: 'Invalid context provided. Must be a string with at least 50 characters.' });
         }
         
         const API_KEY = process.env.API_KEY;
         if (!API_KEY) {
             console.error("API_KEY environment variable not set on the server.");
-            return new Response(JSON.stringify({ error: 'Server configuration error. API key is missing.' }), {
-                status: 500,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
+            return res.status(500).json({ error: 'Server configuration error. API key is missing.' });
         }
 
         const ai = new GoogleGenAI({ apiKey: API_KEY });
@@ -90,16 +81,11 @@ export default async (req: Request): Promise<Response> => {
             throw new Error("AI returned data in an unexpected format.");
         }
 
-        return new Response(JSON.stringify(quizData), {
-            status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return res.status(200).json(quizData);
+
     } catch (error) {
         console.error("Error in serverless function:", error);
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        return new Response(JSON.stringify({ error: `Failed to generate quiz from AI: ${errorMessage}` }), {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return res.status(500).json({ error: `Failed to generate quiz from AI: ${errorMessage}` });
     }
-};
+}
