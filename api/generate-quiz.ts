@@ -79,8 +79,12 @@ export default async (req: Request): Promise<Response> => {
             },
         });
         
-        const jsonText = response.text.trim();
-        const quizData = JSON.parse(jsonText);
+        const jsonText = response.text;
+        if (typeof jsonText !== 'string' || !jsonText.trim()) {
+            throw new Error("The AI returned an empty or invalid response. Please try again.");
+        }
+
+        const quizData = JSON.parse(jsonText.trim());
 
         if (!Array.isArray(quizData)) {
             throw new Error("AI returned data in an unexpected format.");
