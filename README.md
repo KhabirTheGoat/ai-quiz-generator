@@ -1,11 +1,10 @@
 
 # AI Quiz Generator
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FYOUR_USERNAME%2Fai-quiz-generator-repo)
 
 An intelligent web application that transforms any text content or PDF document into an engaging, interactive multiple-choice quiz using the power of the Google Gemini API.
 
-**[➡️ View Live Demo](https://YOUR_VERCEL_DEPLOYMENT_URL_HERE)**
+**[➡️ View Live Demo](https://ai-quiz-generator-gray.vercel.app/)**
 
 ---
 
@@ -102,6 +101,4 @@ To run the application on your local machine for development:
     ```
     Open your browser to `http://localhost:5173` (or whatever URL the terminal shows). The Vercel CLI (included in `npm install`) will automatically run your backend function for local testing.
 
-## 📄 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
