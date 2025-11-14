@@ -1,0 +1,5 @@
+{
+  "name": "AI Quiz Generator",
+  "description": "Generate engaging multiple-choice quizzes from text or PDF documents using AI. Simply paste your text or upload a file, and let the AI create a custom quiz for you to test your knowledge.",
+  "requestFramePermissions": []
+}
